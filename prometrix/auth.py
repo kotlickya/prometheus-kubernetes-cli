@@ -16,7 +16,9 @@ class PrometheusAuthorization:
         if not isinstance(config, AzurePrometheusConfig):
             return False
         return (config.azure_client_id != "" and config.azure_tenant_id != "") and (
-            config.azure_client_secret != "" or config.azure_use_managed_id != ""
+            config.azure_client_secret != "" or  # Service Principal Auth
+            config.azure_use_managed_id != "" or  # Managed Identity Auth
+            config.azure_use_workload_id != ""  # Workload Identity Auth
         )
 
     @classmethod
@@ -48,15 +50,33 @@ class PrometheusAuthorization:
     @no_type_check
     @classmethod
     def _post_azure_token_endpoint(cls, config: PrometheusConfig):
-        return requests.post(
-            url=config.azure_token_endpoint,
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            data={
+        # Try Azure Workload Identity
+        with open("/var/run/secrets/azure/tokens/azure-identity-token", "r") as token_file:
+            token = token_file.read()
+            data = {
+                "grant_type": "client_credentials",
+                "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                "client_assertion": token,
+                "client_id": config.azure_client_id,
+                "scope": f"{config.azure_resource}/.default",
+            }
+        # Fallback to Azure Service Principal
+        if not token:
+            if config.azure_use_workload_id:
+                return {
+                    "ok": False,
+                    "reason": f"Could not open token file from {token_file}",
+                }
+            data = {
                 "grant_type": "client_credentials",
                 "client_id": config.azure_client_id,
                 "client_secret": config.azure_client_secret,
                 "resource": config.azure_resource,
-            },
+            }
+        return requests.post(
+            url=config.azure_token_endpoint,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data=data,
         )
 
     @classmethod
@@ -67,7 +87,7 @@ class PrometheusAuthorization:
             try:
                 if config.azure_use_managed_id:
                     res = cls._get_azure_metadata_endpoint(config)
-                else:
+                else:  # Service Principal and Workload Identity
                     res = cls._post_azure_token_endpoint(config)
             except Exception:
                 logging.exception(
