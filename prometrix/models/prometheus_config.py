@@ -64,6 +64,7 @@ class AzurePrometheusConfig(PrometheusConfig):
     azure_metadata_endpoint: str
     azure_token_endpoint: str
     azure_use_managed_id: Optional[str]
+    azure_use_workload_id: Optional[str]
     azure_client_id: Optional[str]
     azure_tenant_id: Optional[str]
     azure_client_secret: Optional[str]
