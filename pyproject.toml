@@ -3,7 +3,7 @@ name = "prometrix"
 version = "0.2.0"
 authors = ["Avi Kotlicky <avi@robusta.dev>"]
 readme = "README.md"
-packages = [{include = "prometrix"}]
+packages = [{ include = "prometrix" }]
 description = "A Python Prometheus client for all Prometheus instances."
 
 [project.urls]
@@ -14,12 +14,12 @@ description = "A Python Prometheus client for all Prometheus instances."
 python = "^3.8"
 boto3 = "^1.28.15"
 botocore = "^1.31.15"
-pydantic = "^1.8.1"
-prometheus-api-client = "^0.5.3"
-pillow = "^10.3.0" # added to Pin transitive dependency, not needed directly
-fonttools = "^4.43.0" # added to Pin transitive dependency, not needed directly
-urllib3 = "^1.26.20" # added to Pin transitive dependency, not needed directly
-zipp = "^3.20.1" # added to Pin transitive dependency, not needed directly
+pydantic = ">=1.8.1, <3"
+prometheus-api-client = "0.5.3"
+pillow = "^10.3.0"              # added to Pin transitive dependency, not needed directly
+fonttools = "^4.43.0"           # added to Pin transitive dependency, not needed directly
+urllib3 = "^1.26.20"            # added to Pin transitive dependency, not needed directly
+zipp = "^3.20.1"                # added to Pin transitive dependency, not needed directly
 idna = "^3.7"
 requests = "^2.32.0"
 
